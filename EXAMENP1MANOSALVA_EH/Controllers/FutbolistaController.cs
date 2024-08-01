@@ -30,7 +30,7 @@ namespace EXAMENP1MANOSALVA_EH.Controllers
 
         // GET api/<FutbolistasController>/historial/5
         [HttpGet("historial/{id}")]
-        public List<Equipo> GetHistorial(int id)
+        public List<HistoricoEquipo> GetHistorial(int id)
         {
             return ConexionDB.GetHistorial(id);
         }

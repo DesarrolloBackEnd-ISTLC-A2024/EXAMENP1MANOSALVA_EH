@@ -10,7 +10,7 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
 
         public static SqlConnection abrirConexion()
         {
-            conexion = new SqlConnection("Server = ACER\\MSSQLSERVER01; Database = PROYECTO_2; Trusted_Connection = True;");
+            conexion = new SqlConnection("Server = ACER\\MSSQLSERVER01; Database = HistorialFutbol; Trusted_Connection = True;");
             conexion.Open();
             return conexion;
         }
@@ -47,7 +47,7 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
             cmd.Connection = abrirConexion();
             cmd.CommandText = "SP_GET_FUTBOLISTA";
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@PV_ID_JUGADOR", id);
+            cmd.Parameters.AddWithValue("@PI_ID_JUGADOR", id);
             SqlDataAdapter adapter = new SqlDataAdapter(cmd);
             DataSet dataSet = new DataSet();
             adapter.Fill(dataSet);
@@ -56,33 +56,37 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
 
         public static void PostFutbolista(Futbolista objFutbolista)
         {
-            SqlCommand cmd = new SqlCommand();
-            cmd.Connection = abrirConexion();
-            cmd.CommandText = "SP_INS_FUTBOLISTAS";
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@PV_NOMBRE", objFutbolista.Nombre);
-            cmd.Parameters.AddWithValue("@PV_ACTIVO", objFutbolista.Activo);
-            cmd.Parameters.AddWithValue("@PV_FECHA_INICIO", objFutbolista.FechaInicio);
-            cmd.Parameters.AddWithValue("@PV_FECHA_FINAL", objFutbolista.FechaFinal);
-            cmd.Parameters.AddWithValue("@PV_FECHA_MODIFICACION", objFutbolista.FechaModificacion);
-            cmd.Parameters.AddWithValue("@PV_FUTBOLISTA_MODIFICACION", objFutbolista.futbolistaModificacion);
-            cmd.ExecuteNonQuery();
+            using (SqlConnection connection = abrirConexion())
+            {
+                using (SqlCommand cmd = new SqlCommand("SP_INS_FUTBOLISTA", connection))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@PI_ID_JUGADOR", objFutbolista.Id_jugador);
+                    cmd.Parameters.AddWithValue("@PV_NOMBRE", objFutbolista.Nombre);
+                    cmd.Parameters.AddWithValue("@PV_ACTIVO", objFutbolista.Activo);
+                    cmd.Parameters.AddWithValue("@PD_FECHAINICIO", objFutbolista.FechaInicio);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         public static void PutFutbolista(int id, Futbolista objFutbolista)
         {
-            SqlCommand cmd = new SqlCommand();
-            cmd.Connection = abrirConexion();
-            cmd.CommandText = "SP_UPD_FUTBOLISTAS";
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@PV_ID_JUGADOR", id);
-            cmd.Parameters.AddWithValue("@PV_NOMBRE", objFutbolista.Nombre);
-            cmd.Parameters.AddWithValue("@PV_ACTIVO", objFutbolista.Activo);
-            cmd.Parameters.AddWithValue("@PV_FECHA_INICIO", objFutbolista.FechaInicio);
-            cmd.Parameters.AddWithValue("@PV_FECHA_FINAL", objFutbolista.FechaFinal);
-            cmd.Parameters.AddWithValue("@PV_FECHA_MODIFICACION", objFutbolista.FechaModificacion);
-            cmd.Parameters.AddWithValue("@PV_FUTBOLISTA_MODIFICACION", objFutbolista.futbolistaModificacion);
-            cmd.ExecuteNonQuery();
+            using (SqlConnection connection = abrirConexion())
+            {
+                using (SqlCommand cmd = new SqlCommand("SP_UPD_FUTBOLISTA", connection))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@PI_ID_JUGADOR", id);
+                    cmd.Parameters.AddWithValue("@PV_NOMBRE", objFutbolista.Nombre);
+                    cmd.Parameters.AddWithValue("@PV_ACTIVO", objFutbolista.Activo);
+                    cmd.Parameters.AddWithValue("@PD_FECHAINICIO", objFutbolista.FechaInicio);
+                    cmd.Parameters.AddWithValue("@PD_FECHA_FINAL", objFutbolista.FechaFinal);
+                    cmd.Parameters.AddWithValue("@PD_FECHA_MODIFICACION", objFutbolista.FechaModificacion);
+                    cmd.Parameters.AddWithValue("@PD_FUTBOLISTA_MODIFICACION", objFutbolista.futbolistaModificacion);
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
         public static void DeleteFutbolista(int id)
@@ -91,7 +95,7 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
             cmd.Connection = abrirConexion();
             cmd.CommandText = "SP_DEL_FUTBOLISTA";
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@PV_ID_JUGADOR", id);
+            cmd.Parameters.AddWithValue("@PI_ID_JUGADOR", id);
             cmd.ExecuteNonQuery();
         }
 
@@ -104,10 +108,10 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
                 objeto.Id_jugador = Convert.ToInt32(dr["ID_JUGADOR"]);
                 objeto.Nombre = dr["NOMBRE"].ToString();
                 objeto.Activo = dr["ACTIVO"].ToString();
-                objeto.FechaInicio = dr["FECHA_INICIO"] as DateTime?;
-                objeto.FechaFinal = dr["FECHA_FINAL"] as DateTime?;
-                objeto.FechaModificacion = dr["FECHA_MODIFICACION"] as DateTime?;
-                objeto.futbolistaModificacion = dr["FUTBOLISTA_MODIFICACION"] as DateTime?;
+                objeto.FechaInicio = dr["FECHAINICIO"] as DateTime?;
+                objeto.FechaFinal = dr["FECHAFINAL"] as DateTime?;
+                objeto.FechaModificacion = dr["FECHAMODIFICACION"] as DateTime?;
+                objeto.futbolistaModificacion = dr["FUTBOLISTAMODIFICACION"] as DateTime?;
                 lRespuesta.Add(objeto);
             }
             return lRespuesta;
@@ -115,15 +119,17 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
 
         public static List<Futbolista> GetFutbolistasConEquipos()
         {
-            SqlCommand cmd = new SqlCommand();
-            cmd.Connection = abrirConexion();
-            cmd.CommandText = "SP_GET_FUTBOLISTA_CON_EQUIPOS";
-            cmd.CommandType = CommandType.StoredProcedure;
-            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-            DataSet dataSet = new DataSet();
-            adapter.Fill(dataSet);
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Connection = abrirConexion();
+                cmd.CommandText = "SP_GET_FUTBOLISTA_CON_EQUIPOS";
+                cmd.CommandType = CommandType.StoredProcedure;
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataSet dataSet = new DataSet();
+                adapter.Fill(dataSet);
 
-            return llenarFutbolistasConEquipos(dataSet);
+                return llenarFutbolistasConEquipos(dataSet);
+            }
         }
 
         private static List<Futbolista> llenarFutbolistasConEquipos(DataSet dataSet)
@@ -144,11 +150,11 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
                         Id_jugador = idJugador,
                         Nombre = dr["NOMBRE"].ToString(),
                         Activo = dr["ACTIVO"].ToString(),
-                        FechaInicio = dr["FECHA_INICIO"] as DateTime?,
-                        FechaFinal = dr["FECHA_FINAL"] as DateTime?,
-                        FechaModificacion = dr["FECHA_MODIFICACION"] as DateTime?,
-                        futbolistaModificacion = dr["FUTBOLISTA_MODIFICACION"] as DateTime?,
-                        Equipos = new List<Equipo>()
+                        FechaInicio = dr["FECHAINICIO"] as DateTime?,
+                        FechaFinal = dr["FECHAFINAL"] as DateTime?,
+                        FechaModificacion = dr["FECHAMODIFICACION"] as DateTime?,
+                        futbolistaModificacion = dr["FUTBOLISTAMODIFICACION"] as DateTime?,
+                        
                     };
                     futbolistas.Add(futbolista);
                     futbolistaDict[idJugador] = futbolista;
@@ -164,46 +170,52 @@ namespace EXAMENP1MANOSALVA_EH.Comunes
                     {
                         Id_equipo = Convert.ToInt32(dr["ID_EQUIPO"]),
                         Nombre = dr["NOMBRE_EQUIPO"].ToString(),
-                        FechaInicio = dr["FECHA_INICIO"] as DateTime?,
-                        FechaFinal = dr["FECHA_FINAL"] as DateTime?
+                        Partidos = Convert.ToInt32(dr["PARTIDOS"]),
+                        Estado = dr["ESTADO"].ToString(),
+                        FechaInicio = dr["FECHAINICIO"] as DateTime?,
+                        FechaFinal = dr["FECHAFINAL"] as DateTime?,
+                        FechaModificacion = dr["FECHAMODIFICACION"] as DateTime?,
+                        equipoModificacion = dr["EQUIPOMODIFICACION"] as DateTime?
                     };
-                    futbolistaDict[idJugador].Equipos.Add(equipo);
+                    
                 }
             }
 
             return futbolistas;
         }
 
-        public static List<Equipo> GetHistorial(int futbolistaId)
+
+        public static List<HistoricoEquipo> GetHistorial(int futbolistaId)
         {
             SqlCommand cmd = new SqlCommand();
             cmd.Connection = abrirConexion();
             cmd.CommandText = "SP_GET_Historial";
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@FutbolistaId", futbolistaId);
+            cmd.Parameters.AddWithValue("@PI_ID_JUGADOR", futbolistaId);
             SqlDataAdapter adapter = new SqlDataAdapter(cmd);
             DataSet dataSet = new DataSet();
             adapter.Fill(dataSet);
 
-            return llenarEquipos(dataSet.Tables[0]);
+            return llenarfutbolistaH(dataSet.Tables[0]);
         }
 
-        private static List<Equipo> llenarEquipos(DataTable dataTable)
+        private static List<HistoricoEquipo> llenarfutbolistaH(DataTable dataTable)
         {
-            List<Equipo> equipos = new List<Equipo>();
+            List<HistoricoEquipo> HistoricoEquipo = new List<HistoricoEquipo>();
             foreach (DataRow dr in dataTable.Rows)
             {
-                Equipo equipo = new Equipo
-                {
-                    Id_equipo = Convert.ToInt32(dr["Id_equipo"]),
-                    Nombre = dr["NombreEquipo"].ToString(),
-                    FechaInicio = dr["FechaInicio"] as DateTime?,
-                    FechaFinal = dr["FechaFinal"] as DateTime?
-                };
-                equipos.Add(equipo);
+                HistoricoEquipo objeto = new HistoricoEquipo();
+                objeto.NOMBREJUGADOR = dr["NOMBREJUGADOR"].ToString();
+                objeto.NombreEquipo = dr["NombreEquipo"].ToString();
+                objeto.FechaInicio = dr["FechaInicio"] as DateTime?;
+                objeto.FechaFinal = dr["FechaFinal"] as DateTime?;
+                HistoricoEquipo.Add(objeto);
             }
-            return equipos;
+            return HistoricoEquipo;
         }
+
+
+
 
     }
 }
